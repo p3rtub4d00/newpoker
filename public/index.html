@@ -99,6 +99,7 @@
                         <span class="p-name">Bot Mike</span>
                         <span class="p-chips">R$ 5000</span>
                     </div>
+                    <div class="bet-indicator hidden" id="bot1-bet">🪙 0</div>
                     <div class="bot-status" id="bot1-status"></div>
                 </div>
 
@@ -108,11 +109,15 @@
                         <span class="p-name">Bot Sarah</span>
                         <span class="p-chips">R$ 8500</span>
                     </div>
+                    <div class="bet-indicator hidden" id="bot2-bet">🪙 0</div>
                     <div class="bot-status" id="bot2-status"></div>
                 </div>
 
                 <div class="player-seat user-seat">
                     <div class="my-cards" id="my-cards"></div>
+                    
+                    <div class="bet-indicator hidden" id="my-bet">🪙 0</div>
+
                     <div class="player-info user-info-box">
                         <span class="p-name" id="table-player-name">Você</span>
                     </div>
@@ -128,9 +133,17 @@
             <button id="btn-start" class="btn-action deal" onclick="startGame()">INICIAR RODADA (R$ 50)</button>
 
             <div id="game-controls" class="controls-group hidden">
-                <button class="btn-action fold" onclick="playerAction('fold')">FOLD</button>
-                <button class="btn-action check" onclick="playerAction('check')">CHECK</button>
-                <button class="btn-action raise" onclick="playerAction('raise')">RAISE 100</button>
+                <div class="main-actions">
+                    <button class="btn-action fold" onclick="playerAction('fold')">DESISTIR</button>
+                    <button class="btn-action check" onclick="playerAction('check')">MESA / PAGAR</button>
+                </div>
+                
+                <div class="bet-actions">
+                    <button class="btn-small" onclick="playerAction('bet', 100)">+100</button>
+                    <button class="btn-small" onclick="playerAction('half')">1/2 POTE</button>
+                    <button class="btn-small" onclick="playerAction('pot')">POTE</button>
+                    <button class="btn-small all-in" onclick="playerAction('allin')">ALL-IN</button>
+                </div>
             </div>
         </footer>
 
