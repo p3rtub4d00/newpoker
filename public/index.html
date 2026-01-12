@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Poker Elite - Texas Hold'em</title>
+    <title>NEW POKER - Ultimate</title>
     <link rel="stylesheet" href="style.css">
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Lato:wght@400;700&display=swap" rel="stylesheet">
 </head>
@@ -12,18 +12,48 @@
     <div id="login-overlay" class="overlay active">
         <div class="login-box">
             <div class="logo-area">
-                <h1>♠ POKER ELITE ♦</h1>
-                <p>Texas Hold'em Premium</p>
+                <h1>♠ NEW POKER ♦</h1>
+                <p>A Nova Era do Texas Hold'em</p>
             </div>
             
             <div class="input-group">
-                <input type="text" id="username-input" placeholder="Digite seu Nickname">
+                <input type="text" id="username-input" placeholder="Seu Nickname">
             </div>
             
-            <button id="btn-login" onclick="login()">ENTRAR NA MESA</button>
+            <button id="btn-login" onclick="login()">JOGAR AGORA</button>
             
             <div id="daily-bonus-msg" class="bonus-alert hidden">
                 🎁 Bônus Diário: +$500 Recebido!
+            </div>
+        </div>
+    </div>
+
+    <div id="shop-overlay" class="overlay hidden">
+        <div class="shop-box">
+            <div class="shop-header">
+                <h2>LOJA DE FICHAS</h2>
+                <button class="close-btn" onclick="toggleShop()">✖</button>
+            </div>
+            <div class="shop-grid">
+                <div class="shop-card">
+                    <div class="coin-icon">💰</div>
+                    <h3>Iniciante</h3>
+                    <p class="chips-amount">1.000 Fichas</p>
+                    <button class="buy-btn" onclick="buyChips(1000, 5)">R$ 5,00</button>
+                </div>
+                <div class="shop-card popular">
+                    <div class="tag-popular">MAIS VENDIDO</div>
+                    <div class="coin-icon">💰💰</div>
+                    <h3>Jogador Pro</h3>
+                    <p class="chips-amount">10.000 Fichas</p>
+                    <button class="buy-btn" onclick="buyChips(10000, 25)">R$ 25,00</button>
+                </div>
+                <div class="shop-card premium">
+                    <div class="coin-icon">💎</div>
+                    <h3>High Roller</h3>
+                    <p class="chips-amount">100.000 Fichas</p>
+                    <button class="buy-btn" onclick="buyChips(100000, 100)">R$ 100,00</button>
+                </div>
             </div>
         </div>
     </div>
@@ -35,16 +65,20 @@
                 <div class="avatar-small">👤</div>
                 <div class="info">
                     <span id="display-name">Jogador</span>
-                    <span class="chips">💲 <span id="display-chips">0</span></span>
+                    <span class="chips-container">
+                        💲 <span id="display-chips">0</span>
+                        <button class="btn-add-chips" onclick="toggleShop()">+</button>
+                    </span>
                 </div>
             </div>
+            <div class="logo-small">NEW POKER</div>
             <button class="btn-menu">MENU</button>
         </header>
 
         <div class="table-area">
             <div class="poker-table">
                 
-                <div class="table-logo">POKER ELITE</div>
+                <div class="table-logo">NEW POKER</div>
 
                 <div class="community-area">
                     <div class="card-slot" id="comm-1"></div>
@@ -65,7 +99,7 @@
                         <span class="p-name">Bot Mike</span>
                         <span class="p-chips">R$ 5000</span>
                     </div>
-                    <div class="bot-status" id="bot1-status">Aguardando...</div>
+                    <div class="bot-status" id="bot1-status"></div>
                 </div>
 
                 <div class="player-seat bot-seat" style="top: -30px; right: 20%;">
@@ -74,27 +108,30 @@
                         <span class="p-name">Bot Sarah</span>
                         <span class="p-chips">R$ 8500</span>
                     </div>
-                    <div class="bot-status" id="bot2-status">Aguardando...</div>
+                    <div class="bot-status" id="bot2-status"></div>
                 </div>
 
                 <div class="player-seat user-seat">
-                    <div class="my-cards" id="my-cards">
-                        <div class="card back"></div>
-                        <div class="card back"></div>
-                    </div>
+                    <div class="my-cards" id="my-cards"></div>
                     <div class="player-info user-info-box">
                         <span class="p-name" id="table-player-name">Você</span>
                     </div>
+                    <div class="bot-status" id="my-status"></div>
                 </div>
 
             </div>
+            
+            <div id="game-message" class="game-msg hidden">VOCÊ VENCEU!</div>
         </div>
 
-        <footer class="action-bar">
-            <button class="btn-action fold" onclick="playerAction('fold')">FOLD</button>
-            <button class="btn-action check" onclick="playerAction('check')">CHECK / CALL</button>
-            <button class="btn-action raise" onclick="playerAction('raise')">RAISE 100</button>
-            <button class="btn-action deal" onclick="startGame()">DISTRIBUIR CARTAS</button>
+        <footer class="action-bar" id="action-bar">
+            <button id="btn-start" class="btn-action deal" onclick="startGame()">INICIAR RODADA (R$ 50)</button>
+
+            <div id="game-controls" class="controls-group hidden">
+                <button class="btn-action fold" onclick="playerAction('fold')">FOLD</button>
+                <button class="btn-action check" onclick="playerAction('check')">CHECK</button>
+                <button class="btn-action raise" onclick="playerAction('raise')">RAISE 100</button>
+            </div>
         </footer>
 
     </div>
