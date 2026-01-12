@@ -17,15 +17,16 @@ const gameControls = document.getElementById('game-controls');
 // Game State
 let currentUser = { username: '', chips: 1000, lastBonus: null };
 let currentPot = 0;
-let gameStage = 0; // 0=Pre, 1=Flop, 2=Turn, 3=River
+let gameStage = 0; 
+let currentRoundBet = 0; // Quanto o usuário apostou nesta rodada
 
-// Bots Configuration
+// Bots
 const bots = [
-    { id: 'bot1', name: 'Bot Mike', chips: 5000, elementStatus: 'bot1-status' },
-    { id: 'bot2', name: 'Bot Sarah', chips: 8500, elementStatus: 'bot2-status' }
+    { id: 'bot1', name: 'Bot Mike', chips: 5000, elementStatus: 'bot1-status', betElement: 'bot1-bet' },
+    { id: 'bot2', name: 'Bot Sarah', chips: 8500, elementStatus: 'bot2-status', betElement: 'bot2-bet' }
 ];
 
-// --- LOGIN SYSTEM ---
+// --- LOGIN ---
 function login() {
     const user = usernameInput.value.trim();
     if (!user) return alert("Digite um nome!");
@@ -45,10 +46,7 @@ function login() {
     loginOverlay.classList.remove('active');
     loginOverlay.classList.add('hidden');
     gameContainer.classList.remove('hidden');
-    
-    // Força limpeza da mensagem ao entrar
     gameMessage.classList.add('hidden');
-    gameMessage.innerText = '';
 }
 
 function checkDailyBonus() {
@@ -72,7 +70,7 @@ function updateUI() {
     document.getElementById('table-player-name').innerText = currentUser.username;
 }
 
-// --- SHOP SYSTEM ---
+// --- LOJA ---
 function toggleShop() {
     if (shopOverlay.classList.contains('hidden')) {
         shopOverlay.classList.remove('hidden');
@@ -91,103 +89,168 @@ function buyChips(amount, cost) {
     }
 }
 
-// --- GAMEPLAY LOGIC ---
+// --- VISUAL DE APOSTAS ---
+function showBetChips(elementId, amount) {
+    const el = document.getElementById(elementId);
+    if(amount > 0) {
+        el.innerText = `🪙 ${amount}`;
+        el.classList.remove('hidden');
+    } else {
+        el.classList.add('hidden');
+    }
+}
+
+// --- LÓGICA DO JOGO ---
 
 function startGame() {
     if (currentUser.chips < 50) return alert("Saldo insuficiente! Visite a loja.");
 
-    // Reset Table
     clearTable();
     
-    // Blinds
-    currentUser.chips -= 50;
-    currentPot = 150; // 50 User + 50 Bot1 + 50 Bot2
-    gameStage = 0; // Pre-flop
+    // Blinds (Apostas Iniciais)
+    const blind = 50;
+    currentUser.chips -= blind;
+    currentPot = blind * 3; // Jogador + 2 Bots
+    
+    // Mostra fichas iniciais
+    showBetChips('my-bet', blind);
+    showBetChips('bot1-bet', blind);
+    showBetChips('bot2-bet', blind);
+
+    gameStage = 0;
+    currentRoundBet = blind;
     updateUI();
     saveUserData();
 
-    // Toggle Buttons
     btnStart.style.display = 'none';
     gameControls.classList.remove('hidden');
 
-    // Deal Cards
     dealUserCards();
-    setStatus("Sua vez...");
+    setStatus("Sua vez de apostar...");
 }
 
 function clearTable() {
     currentPot = 0;
-    gameMessage.classList.add('hidden'); // Esconde mensagem de vitoria
-    gameMessage.innerText = ''; // Limpa texto
+    currentRoundBet = 0;
+    gameMessage.classList.add('hidden');
+    gameMessage.innerText = '';
+    
     document.getElementById('my-cards').innerHTML = '';
     document.querySelectorAll('.card-slot').forEach(slot => slot.innerHTML = '');
+    
+    // Limpa Bots
     bots.forEach(bot => {
         document.getElementById(bot.elementStatus).style.opacity = '0';
-        document.getElementById(bot.elementStatus).innerText = '';
+        document.getElementById(bot.betElement).classList.add('hidden');
     });
+    
+    // Limpa Jogador
     document.getElementById('my-status').style.opacity = '0';
+    document.getElementById('my-bet').classList.add('hidden');
+    
     updateUI();
 }
 
-function playerAction(action) {
-    setStatus(`Você: ${action.toUpperCase()}`);
+function playerAction(action, value = 0) {
+    let betAmount = 0;
 
     if (action === 'fold') {
-        endHand(false); // Perdeu
+        setStatus("VOCÊ: DESISTIU");
+        endHand(false);
         return;
     }
 
-    if (action === 'raise') {
-        if (currentUser.chips >= 100) {
-            currentUser.chips -= 100;
-            currentPot += 300; // 100 User + 100 Bot1 + 100 Bot2 (Calls)
+    if (action === 'check') {
+        // Se já apostou, é Mesa. Se não, é Pagar (simplificado)
+        setStatus("VOCÊ: MESA");
+        betAmount = 0; 
+    }
+    
+    // Lógica de Apostas
+    else if (action === 'bet') {
+        betAmount = value; // Aposta fixa (100)
+    } 
+    else if (action === 'half') {
+        betAmount = Math.floor(currentPot / 2);
+    } 
+    else if (action === 'pot') {
+        betAmount = currentPot;
+    } 
+    else if (action === 'allin') {
+        betAmount = currentUser.chips;
+    }
+
+    // Processar aposta
+    if (betAmount > 0) {
+        if (currentUser.chips >= betAmount) {
+            currentUser.chips -= betAmount;
+            currentPot += betAmount;
+            currentRoundBet += betAmount;
+            
+            // Atualiza visual
+            setStatus(action === 'allin' ? "VOCÊ: ALL-IN!" : `VOCÊ: APOSTOU ${betAmount}`);
+            showBetChips('my-bet', currentRoundBet);
             updateUI();
         } else {
-            return alert("Fichas insuficientes para Raise!");
+            return alert("Fichas insuficientes!");
         }
     }
 
-    // Bots Action Simulation
+    // Turno dos Bots
     setTimeout(() => {
         bots.forEach(bot => {
             const botEl = document.getElementById(bot.elementStatus);
             botEl.style.opacity = '1';
-            botEl.innerText = action === 'raise' ? 'CALL' : 'CHECK';
-            botEl.style.color = '#2ecc71';
+            
+            // Bot Simples: Se você deu All-in, ele pode foldar ou pagar
+            if(action === 'allin' && Math.random() > 0.5) {
+                botEl.innerText = "DESISTIU";
+                botEl.style.color = '#c0392b';
+            } else {
+                botEl.innerText = "PAGOU";
+                botEl.style.color = '#2ecc71';
+                
+                // Bot coloca fichas também (Visual)
+                const botCall = (betAmount > 0) ? betAmount : 50; 
+                currentPot += botCall;
+                showBetChips(bot.betElement, botCall);
+            }
         });
+        updateUI();
         
-        // Advance Game Stage
-        setTimeout(nextStreet, 1000);
-    }, 800);
+        setTimeout(nextStreet, 1500);
+    }, 1000);
 }
 
 function nextStreet() {
     gameStage++;
+    
+    // Limpa apostas da mesa para a próxima rodada visualmente (opcional, mas comum no poker)
+    // showBetChips('my-bet', 0);
+    
     const slots = document.querySelectorAll('.card-slot');
     const c1 = generateRandomCard();
     const c2 = generateRandomCard();
     const c3 = generateRandomCard();
 
-    if (gameStage === 1) { // FLOP (3 Cartas)
+    if (gameStage === 1) { // FLOP
         slots[0].innerHTML = renderCard(c1);
         slots[1].innerHTML = renderCard(c2);
         slots[2].innerHTML = renderCard(c3);
-    } else if (gameStage === 2) { // TURN (1 Carta)
+    } else if (gameStage === 2) { // TURN
         slots[3].innerHTML = renderCard(c1);
-    } else if (gameStage === 3) { // RIVER (1 Carta)
+    } else if (gameStage === 3) { // RIVER
         slots[4].innerHTML = renderCard(c1);
     } else {
-        // Showdown
         determineWinner();
         return;
     }
     
-    // Se não acabou, volta status para user
     setStatus("Sua vez...");
 }
 
 function determineWinner() {
-    // Simulação simples de vencedor (50% chance de ganhar para teste)
+    // 50% de chance para teste
     const userWins = Math.random() > 0.5;
     endHand(userWins);
 }
@@ -207,12 +270,12 @@ function endHand(userWins) {
         gameMessage.style.borderColor = '#c0392b';
     }
 
-    gameMessage.classList.remove('hidden'); // Só aqui mostramos a mensagem
+    gameMessage.classList.remove('hidden');
     saveUserData();
     updateUI();
 }
 
-// --- UTILS ---
+// --- UTILITÁRIOS ---
 function setStatus(msg) {
     const el = document.getElementById('my-status');
     el.innerText = msg;
