@@ -15,15 +15,45 @@
                 <h1>♠ NEW POKER ♦</h1>
                 <p>A Nova Era do Texas Hold'em</p>
             </div>
-            
             <div class="input-group">
                 <input type="text" id="username-input" placeholder="Seu Nickname">
             </div>
-            
-            <button id="btn-login" onclick="login()">JOGAR AGORA</button>
-            
+            <button id="btn-login" onclick="login()">ENTRAR</button>
             <div id="daily-bonus-msg" class="bonus-alert hidden">
                 🎁 Bônus Diário: +$500 Recebido!
+            </div>
+        </div>
+    </div>
+
+    <div id="lobby-overlay" class="overlay hidden">
+        <div class="lobby-box">
+            <h2>ESCOLHA SUA MESA</h2>
+            <div class="tables-grid">
+                <div class="table-card" onclick="selectTable(5)">
+                    <div class="table-icon">🥉</div>
+                    <h3>Iniciante</h3>
+                    <p>Blind: R$ 5</p>
+                </div>
+                <div class="table-card" onclick="selectTable(10)">
+                    <div class="table-icon">🥈</div>
+                    <h3>Amador</h3>
+                    <p>Blind: R$ 10</p>
+                </div>
+                <div class="table-card" onclick="selectTable(50)">
+                    <div class="table-icon">🥇</div>
+                    <h3>Profissional</h3>
+                    <p>Blind: R$ 50</p>
+                </div>
+                <div class="table-card highlight" onclick="selectTable(100)">
+                    <div class="table-icon">💎</div>
+                    <h3>Elite</h3>
+                    <p>Blind: R$ 100</p>
+                </div>
+                <div class="table-card premium" onclick="selectTable(1000)">
+                    <div class="table-icon">👑</div>
+                    <h3>High Stakes</h3>
+                    <p>Blind: R$ 1.000</p>
+                </div>
             </div>
         </div>
     </div>
@@ -38,20 +68,19 @@
                 <div class="shop-card">
                     <div class="coin-icon">💰</div>
                     <h3>Iniciante</h3>
-                    <p class="chips-amount">1.000 Fichas</p>
+                    <p>1.000 Fichas</p>
                     <button class="buy-btn" onclick="buyChips(1000, 5)">R$ 5,00</button>
                 </div>
                 <div class="shop-card popular">
-                    <div class="tag-popular">MAIS VENDIDO</div>
                     <div class="coin-icon">💰💰</div>
                     <h3>Jogador Pro</h3>
-                    <p class="chips-amount">10.000 Fichas</p>
+                    <p>10.000 Fichas</p>
                     <button class="buy-btn" onclick="buyChips(10000, 25)">R$ 25,00</button>
                 </div>
                 <div class="shop-card premium">
                     <div class="coin-icon">💎</div>
                     <h3>High Roller</h3>
-                    <p class="chips-amount">100.000 Fichas</p>
+                    <p>100.000 Fichas</p>
                     <button class="buy-btn" onclick="buyChips(100000, 100)">R$ 100,00</button>
                 </div>
             </div>
@@ -71,8 +100,8 @@
                     </span>
                 </div>
             </div>
-            <div class="logo-small">NEW POKER</div>
-            <button class="btn-menu">MENU</button>
+            <div class="logo-small">NEW POKER <span id="table-info-display" style="font-size: 0.6em; color: #888;"></span></div>
+            <button class="btn-menu" onclick="backToLobby()">SAIR DA MESA</button>
         </header>
 
         <div class="table-area">
@@ -99,7 +128,7 @@
                         <span class="p-name">Bot Mike</span>
                         <span class="p-chips">R$ 5000</span>
                     </div>
-                    <div class="bet-indicator hidden" id="bot1-bet">🪙 0</div>
+                    <div class="bet-indicator hidden" id="bot1-bet"></div>
                     <div class="bot-status" id="bot1-status"></div>
                 </div>
 
@@ -109,15 +138,14 @@
                         <span class="p-name">Bot Sarah</span>
                         <span class="p-chips">R$ 8500</span>
                     </div>
-                    <div class="bet-indicator hidden" id="bot2-bet">🪙 0</div>
+                    <div class="bet-indicator hidden" id="bot2-bet"></div>
                     <div class="bot-status" id="bot2-status"></div>
                 </div>
 
                 <div class="player-seat user-seat">
+                    <div class="bet-indicator hidden" id="my-bet"></div>
                     <div class="my-cards" id="my-cards"></div>
                     
-                    <div class="bet-indicator hidden" id="my-bet">🪙 0</div>
-
                     <div class="player-info user-info-box">
                         <span class="p-name" id="table-player-name">Você</span>
                     </div>
@@ -130,16 +158,15 @@
         </div>
 
         <footer class="action-bar" id="action-bar">
-            <button id="btn-start" class="btn-action deal" onclick="startGame()">INICIAR RODADA (R$ 50)</button>
+            <button id="btn-start" class="btn-action deal" onclick="startGame()">INICIAR RODADA</button>
 
             <div id="game-controls" class="controls-group hidden">
                 <div class="main-actions">
                     <button class="btn-action fold" onclick="playerAction('fold')">DESISTIR</button>
                     <button class="btn-action check" onclick="playerAction('check')">MESA / PAGAR</button>
                 </div>
-                
                 <div class="bet-actions">
-                    <button class="btn-small" onclick="playerAction('bet', 100)">+100</button>
+                    <button class="btn-small" onclick="playerAction('min_raise')">MIN</button>
                     <button class="btn-small" onclick="playerAction('half')">1/2 POTE</button>
                     <button class="btn-small" onclick="playerAction('pot')">POTE</button>
                     <button class="btn-small all-in" onclick="playerAction('allin')">ALL-IN</button>
