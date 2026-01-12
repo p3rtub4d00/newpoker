@@ -27,32 +27,44 @@
 
     <div id="lobby-overlay" class="overlay hidden">
         <div class="lobby-box">
-            <h2>ESCOLHA SUA MESA</h2>
+            <div class="lobby-header">
+                <h2>ESCOLHA SUA MESA</h2>
+                <div class="lobby-info">
+                    <span class="lobby-balance">Seu Saldo: <span id="lobby-chips" style="color: #2ecc71;">0</span></span>
+                    <button class="btn-deposit-lobby" onclick="toggleShop()">💰 DEPOSITAR</button>
+                </div>
+            </div>
+
             <div class="tables-grid">
                 <div class="table-card" onclick="selectTable(5)">
                     <div class="table-icon">🥉</div>
                     <h3>Iniciante</h3>
                     <p>Blind: R$ 5</p>
+                    <small>Min: R$ 25</small>
                 </div>
                 <div class="table-card" onclick="selectTable(10)">
                     <div class="table-icon">🥈</div>
                     <h3>Amador</h3>
                     <p>Blind: R$ 10</p>
+                    <small>Min: R$ 50</small>
                 </div>
                 <div class="table-card" onclick="selectTable(50)">
                     <div class="table-icon">🥇</div>
                     <h3>Profissional</h3>
                     <p>Blind: R$ 50</p>
+                    <small>Min: R$ 250</small>
                 </div>
                 <div class="table-card highlight" onclick="selectTable(100)">
                     <div class="table-icon">💎</div>
                     <h3>Elite</h3>
                     <p>Blind: R$ 100</p>
+                    <small>Min: R$ 500</small>
                 </div>
                 <div class="table-card premium" onclick="selectTable(1000)">
                     <div class="table-icon">👑</div>
                     <h3>High Stakes</h3>
                     <p>Blind: R$ 1.000</p>
+                    <small>Min: R$ 5.000</small>
                 </div>
             </div>
         </div>
