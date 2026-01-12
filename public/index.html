@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Poker Online MVP</title>
+    <style>
+        body { background-color: #0f4d19; color: white; font-family: sans-serif; text-align: center; }
+        .table { margin-top: 50px; }
+        .community-cards { margin: 20px; font-size: 24px; min-height: 40px;}
+        .card { display: inline-block; background: white; color: black; padding: 10px; margin: 5px; border-radius: 5px; width: 30px;}
+        .red { color: red; }
+        .players { display: flex; justify-content: center; gap: 20px; flex-wrap: wrap; }
+        .player-box { border: 2px solid gold; padding: 10px; background: rgba(0,0,0,0.5); width: 150px; }
+        .controls { margin-top: 20px; }
+        button { padding: 10px 20px; cursor: pointer; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+    <h1>Poker MVP - Render</h1>
+    
+    <div id="login">
+        <input type="text" id="username" placeholder="Seu Nickname">
+        <button onclick="entrar()">Sentar na Mesa</button>
+    </div>
+
+    <div id="game-area" style="display:none;">
+        <div class="table">
+            <h3>Cartas da Mesa (Community)</h3>
+            <div id="community" class="community-cards"></div>
+            <h3>Pote: R$ <span id="pot">0</span></h3>
+        </div>
+
+        <div id="players" class="players"></div>
+
+        <div class="controls">
+            <button onclick="startGame()">Iniciar Mão (Admin)</button>
+            <button onclick="action('bet', 50)">Apostar 50</button>
+            <button onclick="action('fold', 0)">Fold</button>
+        </div>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        const socket = io();
+        let myId = null;
+
+        socket.on('connect', () => {
+            myId = socket.id;
+        });
+
+        function entrar() {
+            const nome = document.getElementById('username').value;
+            if(nome) {
+                socket.emit('join_table', nome);
+                document.getElementById('login').style.display = 'none';
+                document.getElementById('game-area').style.display = 'block';
+            }
+        }
+
+        function startGame() {
+            socket.emit('start_game');
+        }
+
+        function action(act, amt) {
+            socket.emit('player_action', { action: act, amount: amt });
+        }
+
+        socket.on('update_state', (state) => {
+            renderGame(state);
+        });
+
+        function renderGame(state) {
+            // Render Community Cards
+            const commDiv = document.getElementById('community');
+            commDiv.innerHTML = state.communityCards.map(card => renderCard(card)).join('');
+            
+            document.getElementById('pot').innerText = state.pot;
+
+            // Render Players
+            const playersDiv = document.getElementById('players');
+            playersDiv.innerHTML = '';
+            
+            for (let id in state.players) {
+                const p = state.players[id];
+                const isMe = id === myId;
+                
+                // Só mostra as cartas se for EU ou se for Showdown (não implementado aqui)
+                let handHtml = '?? ??';
+                if (isMe && p.hand.length > 0) {
+                    handHtml = p.hand.map(card => renderCard(card)).join('');
+                }
+
+                playersDiv.innerHTML += `
+                    <div class="player-box" style="${p.folded ? 'opacity:0.5' : ''}">
+                        <strong>${p.nome}</strong><br>
+                        Fichas: ${p.chips}<br>
+                        Aposta: ${p.bet}<br>
+                        <div style="margin-top:5px">${handHtml}</div>
+                    </div>
+                `;
+            }
+        }
+
+        function renderCard(card) {
+            const colorClass = (card.suit === '♥' || card.suit === '♦') ? 'red' : '';
+            return `<div class="card ${colorClass}">${card.value}${card.suit}</div>`;
+        }
+    </script>
+</body>
+</html>
