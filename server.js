@@ -15,22 +15,20 @@ app.get('/', (req, res) => {
     res.sendFile(__dirname + '/public/index.html');
 });
 
-// Eventos do Socket (Básico para comunicação)
+// Eventos do Socket
 io.on('connection', (socket) => {
-    console.log('Um jogador conectou:', socket.id);
+    console.log('Jogador conectado:', socket.id);
 
     socket.on('disconnect', () => {
         console.log('Jogador desconectou:', socket.id);
     });
 
-    // Aqui podemos expandir para comunicar ações para outros jogadores reais no futuro
     socket.on('playerAction', (data) => {
-        // Por enquanto, apenas retransmite para fins de teste
         socket.broadcast.emit('updateTable', data);
     });
 });
 
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => {
-    console.log(`Servidor rodando em http://localhost:${PORT}`);
+    console.log(`NEW POKER rodando em http://localhost:${PORT}`);
 });
