@@ -18,7 +18,6 @@ const gameControls = document.getElementById('game-controls');
 let currentUser = { username: '', chips: 1000, lastBonus: null };
 let currentPot = 0;
 let gameStage = 0; // 0=Pre, 1=Flop, 2=Turn, 3=River
-let deck = [];
 
 // Bots Configuration
 const bots = [
@@ -43,9 +42,13 @@ function login() {
     saveUserData();
     updateUI();
 
+    loginOverlay.classList.remove('active');
     loginOverlay.classList.add('hidden');
     gameContainer.classList.remove('hidden');
-    setTimeout(() => loginOverlay.style.display = 'none', 500);
+    
+    // Força limpeza da mensagem ao entrar
+    gameMessage.classList.add('hidden');
+    gameMessage.innerText = '';
 }
 
 function checkDailyBonus() {
@@ -73,11 +76,8 @@ function updateUI() {
 function toggleShop() {
     if (shopOverlay.classList.contains('hidden')) {
         shopOverlay.classList.remove('hidden');
-        shopOverlay.style.display = 'flex';
-        shopOverlay.style.opacity = '1';
     } else {
         shopOverlay.classList.add('hidden');
-        setTimeout(() => shopOverlay.style.display = 'none', 300);
     }
 }
 
@@ -98,7 +98,6 @@ function startGame() {
 
     // Reset Table
     clearTable();
-    gameMessage.classList.add('hidden');
     
     // Blinds
     currentUser.chips -= 50;
@@ -113,11 +112,13 @@ function startGame() {
 
     // Deal Cards
     dealUserCards();
-    setStatus("Faça sua jogada!");
+    setStatus("Sua vez...");
 }
 
 function clearTable() {
     currentPot = 0;
+    gameMessage.classList.add('hidden'); // Esconde mensagem de vitoria
+    gameMessage.innerText = ''; // Limpa texto
     document.getElementById('my-cards').innerHTML = '';
     document.querySelectorAll('.card-slot').forEach(slot => slot.innerHTML = '');
     bots.forEach(bot => {
@@ -180,6 +181,9 @@ function nextStreet() {
         determineWinner();
         return;
     }
+    
+    // Se não acabou, volta status para user
+    setStatus("Sua vez...");
 }
 
 function determineWinner() {
@@ -203,7 +207,7 @@ function endHand(userWins) {
         gameMessage.style.borderColor = '#c0392b';
     }
 
-    gameMessage.classList.remove('hidden');
+    gameMessage.classList.remove('hidden'); // Só aqui mostramos a mensagem
     saveUserData();
     updateUI();
 }
