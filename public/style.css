@@ -1,5 +1,9 @@
-/* Reset e Fontes */
+/* Reset e Utilitários */
 * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
+
+/* CORREÇÃO IMPORTANTE: Classe Global para esconder elementos */
+.hidden { display: none !important; opacity: 0; pointer-events: none; }
+
 body { background-color: #0a0a0a; font-family: 'Lato', sans-serif; color: white; height: 100vh; overflow: hidden; display: flex; flex-direction: column; }
 
 /* --- TELA DE LOGIN & OVERLAYS --- */
@@ -9,7 +13,7 @@ body { background-color: #0a0a0a; font-family: 'Lato', sans-serif; color: white;
     display: flex; justify-content: center; align-items: center;
     transition: opacity 0.3s;
 }
-.overlay.hidden { opacity: 0; pointer-events: none; }
+.overlay.active { opacity: 1; pointer-events: all; }
 
 .login-box {
     background: linear-gradient(145deg, #1c1c1c, #0d0d0d);
@@ -33,7 +37,6 @@ body { background-color: #0a0a0a; font-family: 'Lato', sans-serif; color: white;
     margin-top: 20px; background: rgba(46, 204, 113, 0.2);
     color: #2ecc71; padding: 10px; border-radius: 5px; border: 1px solid #2ecc71;
 }
-.bonus-alert.hidden { display: none; }
 
 /* --- LOJA DE FICHAS --- */
 .shop-box {
@@ -69,7 +72,6 @@ body { background-color: #0a0a0a; font-family: 'Lato', sans-serif; color: white;
 
 /* --- ÁREA DO JOGO --- */
 .game-container { width: 100%; height: 100%; display: flex; flex-direction: column; }
-.game-container.hidden { display: none; }
 
 /* Top Bar */
 .top-bar { background: #111; padding: 10px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #333; }
@@ -116,14 +118,13 @@ body { background-color: #0a0a0a; font-family: 'Lato', sans-serif; color: white;
     position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
     background: rgba(0,0,0,0.8); color: #d4af37; font-family: 'Cinzel', serif;
     font-size: 2rem; padding: 20px 40px; border: 3px solid #d4af37; border-radius: 10px; z-index: 10;
-    animation: popIn 0.5s ease; text-align: center;
+    animation: popIn 0.5s ease; text-align: center; white-space: nowrap;
 }
 @keyframes popIn { from { transform: translate(-50%, -50%) scale(0); } to { transform: translate(-50%, -50%) scale(1); } }
 
 /* Footer Actions */
 .action-bar { background: #111; padding: 15px; display: flex; justify-content: center; gap: 15px; border-top: 1px solid #333; min-height: 80px; align-items: center;}
 .controls-group { display: flex; gap: 15px; }
-.controls-group.hidden { display: none; }
 .btn-action { padding: 12px 25px; border: none; border-radius: 5px; font-weight: bold; cursor: pointer; font-size: 1rem; transition: filter 0.2s; color: white;}
 .btn-action:hover { filter: brightness(1.2); }
 .fold { background: #c0392b; }
@@ -138,4 +139,5 @@ body { background-color: #0a0a0a; font-family: 'Lato', sans-serif; color: white;
     .card-slot { width: 35px; height: 50px; }
     .card { width: 35px; height: 50px; font-size: 0.9rem; }
     .my-cards .card { width: 45px; height: 70px; }
+    .game-msg { font-size: 1.5rem; padding: 15px 30px; }
 }
