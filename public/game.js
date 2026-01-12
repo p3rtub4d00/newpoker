@@ -1,238 +1,238 @@
 const socket = io();
 
-// Elementos do DOM
+// UI Elements
 const loginOverlay = document.getElementById('login-overlay');
+const shopOverlay = document.getElementById('shop-overlay');
 const gameContainer = document.getElementById('game-container');
 const usernameInput = document.getElementById('username-input');
 const displayName = document.getElementById('display-name');
 const displayChips = document.getElementById('display-chips');
 const bonusMsg = document.getElementById('daily-bonus-msg');
 const potDisplay = document.getElementById('pot-amount');
+const gameMessage = document.getElementById('game-message');
 
-// Estado do Jogo (Local)
-let currentUser = {
-    username: '',
-    chips: 1000,
-    lastBonus: null
-};
+const btnStart = document.getElementById('btn-start');
+const gameControls = document.getElementById('game-controls');
 
-// Configuração dos Bots
+// Game State
+let currentUser = { username: '', chips: 1000, lastBonus: null };
+let currentPot = 0;
+let gameStage = 0; // 0=Pre, 1=Flop, 2=Turn, 3=River
+let deck = [];
+
+// Bots Configuration
 const bots = [
     { id: 'bot1', name: 'Bot Mike', chips: 5000, elementStatus: 'bot1-status' },
     { id: 'bot2', name: 'Bot Sarah', chips: 8500, elementStatus: 'bot2-status' }
 ];
 
-let currentPot = 0;
-
-// --- FUNÇÕES DE LOGIN E DADOS ---
-
+// --- LOGIN SYSTEM ---
 function login() {
     const user = usernameInput.value.trim();
     if (!user) return alert("Digite um nome!");
 
-    // Recupera dados do localStorage
-    const savedData = localStorage.getItem('poker_user_' + user);
-    
+    const savedData = localStorage.getItem('newpoker_user_' + user);
     if (savedData) {
         currentUser = JSON.parse(savedData);
     } else {
-        // Novo Usuário
         currentUser.username = user;
         currentUser.chips = 1000;
-        currentUser.lastBonus = null;
     }
 
-    // Verifica Bônus Diário
     checkDailyBonus();
-
-    // Salva e Atualiza UI
     saveUserData();
     updateUI();
 
-    // Troca de Tela
     loginOverlay.classList.add('hidden');
     gameContainer.classList.remove('hidden');
-    
-    // Animação leve de entrada
-    setTimeout(() => {
-        loginOverlay.style.display = 'none';
-        gameContainer.classList.remove('hidden');
-    }, 500);
+    setTimeout(() => loginOverlay.style.display = 'none', 500);
 }
 
 function checkDailyBonus() {
     const today = new Date().toDateString();
-    
     if (currentUser.lastBonus !== today) {
-        // Dá o bônus
         currentUser.chips += 500;
         currentUser.lastBonus = today;
-        
-        // Mostra mensagem
         bonusMsg.classList.remove('hidden');
-        setTimeout(() => {
-            bonusMsg.classList.add('hidden');
-        }, 3000);
+        setTimeout(() => bonusMsg.classList.add('hidden'), 3000);
     }
 }
 
 function saveUserData() {
-    localStorage.setItem('poker_user_' + currentUser.username, JSON.stringify(currentUser));
+    localStorage.setItem('newpoker_user_' + currentUser.username, JSON.stringify(currentUser));
 }
 
 function updateUI() {
     displayName.innerText = currentUser.username;
     displayChips.innerText = currentUser.chips.toLocaleString('pt-BR');
     potDisplay.innerText = "R$ " + currentPot;
-    
-    // Atualiza nome na mesa
     document.getElementById('table-player-name').innerText = currentUser.username;
 }
 
+// --- SHOP SYSTEM ---
+function toggleShop() {
+    if (shopOverlay.classList.contains('hidden')) {
+        shopOverlay.classList.remove('hidden');
+        shopOverlay.style.display = 'flex';
+        shopOverlay.style.opacity = '1';
+    } else {
+        shopOverlay.classList.add('hidden');
+        setTimeout(() => shopOverlay.style.display = 'none', 300);
+    }
+}
 
-// --- LÓGICA DO JOGO (SIMPLES PARA UI) ---
+function buyChips(amount, cost) {
+    if (confirm(`Comprar ${amount} fichas por R$ ${cost}?`)) {
+        currentUser.chips += amount;
+        saveUserData();
+        updateUI();
+        alert("Compra realizada com sucesso! Fichas adicionadas.");
+        toggleShop();
+    }
+}
+
+// --- GAMEPLAY LOGIC ---
 
 function startGame() {
-    // 1. Limpar Mesa
-    clearTable();
-    
-    // 2. Aposta Inicial (Blind)
-    const blind = 50;
-    if (currentUser.chips < blind) return alert("Saldo insuficiente!");
-    
-    currentUser.chips -= blind;
-    currentPot += blind * 3; // Jogador + 2 Bots
-    updateUI();
+    if (currentUser.chips < 50) return alert("Saldo insuficiente! Visite a loja.");
 
-    // 3. Dar Cartas (Visualmente)
-    dealUserCards();
+    // Reset Table
+    clearTable();
+    gameMessage.classList.add('hidden');
     
-    // 4. Iniciar Turno dos Bots
-    setTimeout(() => {
-        handleBotTurn(0); // Bot 1
-    }, 1500);
+    // Blinds
+    currentUser.chips -= 50;
+    currentPot = 150; // 50 User + 50 Bot1 + 50 Bot2
+    gameStage = 0; // Pre-flop
+    updateUI();
+    saveUserData();
+
+    // Toggle Buttons
+    btnStart.style.display = 'none';
+    gameControls.classList.remove('hidden');
+
+    // Deal Cards
+    dealUserCards();
+    setStatus("Faça sua jogada!");
 }
 
 function clearTable() {
     currentPot = 0;
     document.getElementById('my-cards').innerHTML = '';
-    const slots = document.querySelectorAll('.card-slot');
-    slots.forEach(slot => slot.innerHTML = '');
-    
-    // Reseta status dos bots
+    document.querySelectorAll('.card-slot').forEach(slot => slot.innerHTML = '');
     bots.forEach(bot => {
         document.getElementById(bot.elementStatus).style.opacity = '0';
+        document.getElementById(bot.elementStatus).innerText = '';
     });
-    
+    document.getElementById('my-status').style.opacity = '0';
     updateUI();
 }
 
-function dealUserCards() {
-    const hand = generateRandomHand();
-    const handDiv = document.getElementById('my-cards');
-    
-    handDiv.innerHTML = `
-        <div class="card ${hand[0].suitColor}">${hand[0].rank}${hand[0].suit}</div>
-        <div class="card ${hand[1].suitColor}">${hand[1].rank}${hand[1].suit}</div>
-    `;
-}
+function playerAction(action) {
+    setStatus(`Você: ${action.toUpperCase()}`);
 
-function generateRandomHand() {
-    const suits = ['♥', '♦', '♣', '♠'];
-    const ranks = ['A', 'K', 'Q', 'J', '10', '9', '8'];
-    
-    let cards = [];
-    for(let i=0; i<2; i++) {
-        let s = suits[Math.floor(Math.random() * suits.length)];
-        let r = ranks[Math.floor(Math.random() * ranks.length)];
-        let color = (s === '♥' || s === '♦') ? 'red' : 'black';
-        cards.push({ suit: s, rank: r, suitColor: color });
-    }
-    return cards;
-}
-
-// --- INTELIGÊNCIA ARTIFICIAL (BOTS) ---
-
-function handleBotTurn(botIndex) {
-    if (botIndex >= bots.length) {
-        // Vez do Jogador Real
-        showMessage("Sua vez!");
+    if (action === 'fold') {
+        endHand(false); // Perdeu
         return;
     }
 
-    const bot = bots[botIndex];
-    const statusEl = document.getElementById(bot.elementStatus);
-    
-    // Mostra que está "pensando"
-    statusEl.innerText = "Pensando...";
-    statusEl.style.opacity = '1';
-    statusEl.style.color = '#f1c40f';
-
-    // Simula tempo de raciocínio (1 a 3 segundos)
-    const thinkingTime = Math.floor(Math.random() * 2000) + 1000;
-
-    setTimeout(() => {
-        // Decide ação aleatória
-        const action = Math.random();
-        let actionText = "";
-
-        if (action < 0.2) {
-            actionText = "FOLD";
-            statusEl.style.color = "#c0392b";
-        } else if (action < 0.7) {
-            actionText = "CHECK";
-            statusEl.style.color = "#2980b9";
-        } else {
-            actionText = "RAISE 50";
-            statusEl.style.color = "#27ae60";
-            currentPot += 50;
-            updateUI();
-        }
-
-        statusEl.innerText = actionText;
-
-        // Passa para o próximo bot
-        handleBotTurn(botIndex + 1);
-
-    }, thinkingTime);
-}
-
-function playerAction(action) {
-    if (action === 'fold') {
-        alert("Você desistiu desta mão.");
-        clearTable();
-    } else if (action === 'raise') {
+    if (action === 'raise') {
         if (currentUser.chips >= 100) {
             currentUser.chips -= 100;
-            currentPot += 100;
-            saveUserData();
+            currentPot += 300; // 100 User + 100 Bot1 + 100 Bot2 (Calls)
             updateUI();
-            
-            // Bots reagem ao seu raise
-            setTimeout(() => { showMessage("Bots pagaram sua aposta!"); currentPot += 200; updateUI(); }, 1000);
-            
-            // Coloca cartas na mesa (Flop)
-            setTimeout(dealFlop, 1500);
+        } else {
+            return alert("Fichas insuficientes para Raise!");
         }
+    }
+
+    // Bots Action Simulation
+    setTimeout(() => {
+        bots.forEach(bot => {
+            const botEl = document.getElementById(bot.elementStatus);
+            botEl.style.opacity = '1';
+            botEl.innerText = action === 'raise' ? 'CALL' : 'CHECK';
+            botEl.style.color = '#2ecc71';
+        });
+        
+        // Advance Game Stage
+        setTimeout(nextStreet, 1000);
+    }, 800);
+}
+
+function nextStreet() {
+    gameStage++;
+    const slots = document.querySelectorAll('.card-slot');
+    const c1 = generateRandomCard();
+    const c2 = generateRandomCard();
+    const c3 = generateRandomCard();
+
+    if (gameStage === 1) { // FLOP (3 Cartas)
+        slots[0].innerHTML = renderCard(c1);
+        slots[1].innerHTML = renderCard(c2);
+        slots[2].innerHTML = renderCard(c3);
+    } else if (gameStage === 2) { // TURN (1 Carta)
+        slots[3].innerHTML = renderCard(c1);
+    } else if (gameStage === 3) { // RIVER (1 Carta)
+        slots[4].innerHTML = renderCard(c1);
     } else {
-        // Check
-        setTimeout(dealFlop, 500);
+        // Showdown
+        determineWinner();
+        return;
     }
 }
 
-function dealFlop() {
-    const slots = document.querySelectorAll('.card-slot');
-    const hand = generateRandomHand(); // Reutilizando logica para gerar cartas random
-    const hand2 = generateRandomHand();
-    const hand3 = generateRandomHand(); // Apenas para pegar cartas aleatórias
-    
-    // Preenche 3 cartas comunitárias
-    slots[0].innerHTML = `<div class="card ${hand[0].suitColor}" style="width:100%; height:100%">${hand[0].rank}${hand[0].suit}</div>`;
-    slots[1].innerHTML = `<div class="card ${hand[1].suitColor}" style="width:100%; height:100%">${hand[1].rank}${hand[1].suit}</div>`;
-    slots[2].innerHTML = `<div class="card ${hand2[0].suitColor}" style="width:100%; height:100%">${hand2[0].rank}${hand2[0].suit}</div>`;
+function determineWinner() {
+    // Simulação simples de vencedor (50% chance de ganhar para teste)
+    const userWins = Math.random() > 0.5;
+    endHand(userWins);
 }
 
-function showMessage(msg) {
-    // Função utilitária para logs futuros
-    console.log(msg);
+function endHand(userWins) {
+    btnStart.style.display = 'block';
+    gameControls.classList.add('hidden');
+
+    if (userWins) {
+        currentUser.chips += currentPot;
+        gameMessage.innerText = `VOCÊ VENCEU! +$${currentPot}`;
+        gameMessage.style.color = '#d4af37';
+        gameMessage.style.borderColor = '#d4af37';
+    } else {
+        gameMessage.innerText = "VOCÊ PERDEU!";
+        gameMessage.style.color = '#c0392b';
+        gameMessage.style.borderColor = '#c0392b';
+    }
+
+    gameMessage.classList.remove('hidden');
+    saveUserData();
+    updateUI();
+}
+
+// --- UTILS ---
+function setStatus(msg) {
+    const el = document.getElementById('my-status');
+    el.innerText = msg;
+    el.style.opacity = 1;
+}
+
+function generateRandomCard() {
+    const suits = ['♥', '♦', '♣', '♠'];
+    const ranks = ['A', 'K', 'Q', 'J', '10', '9', '8', '7'];
+    const s = suits[Math.floor(Math.random() * suits.length)];
+    const r = ranks[Math.floor(Math.random() * ranks.length)];
+    const color = (s === '♥' || s === '♦') ? 'red' : 'black';
+    return { suit: s, rank: r, color: color };
+}
+
+function renderCard(card) {
+    return `<div class="card ${card.color}" style="width:100%; height:100%">${card.rank}${card.suit}</div>`;
+}
+
+function dealUserCards() {
+    const c1 = generateRandomCard();
+    const c2 = generateRandomCard();
+    document.getElementById('my-cards').innerHTML = `
+        <div class="card ${c1.color}">${c1.rank}${c1.suit}</div>
+        <div class="card ${c2.color}">${c2.rank}${c2.suit}</div>
+    `;
 }
