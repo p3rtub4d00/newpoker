@@ -8,6 +8,7 @@ const gameContainer = document.getElementById('game-container');
 const usernameInput = document.getElementById('username-input');
 const displayName = document.getElementById('display-name');
 const displayChips = document.getElementById('display-chips');
+const lobbyChips = document.getElementById('lobby-chips'); // NOVO
 const bonusMsg = document.getElementById('daily-bonus-msg');
 const potDisplay = document.getElementById('pot-amount');
 const gameMessage = document.getElementById('game-message');
@@ -19,14 +20,12 @@ const gameControls = document.getElementById('game-controls');
 // Game State
 let currentUser = { username: '', chips: 1000, lastBonus: null };
 let currentPot = 0;
-let currentBlind = 0; // Valor da mesa atual
+let currentBlind = 0;
 let gameStage = 0; 
 let currentRoundBet = 0;
 
-// Lista de Nomes de Mãos para Exibir na Vitória
 const handNames = ["Par", "Dois Pares", "Trinca", "Sequência", "Flush", "Full House", "Quadra", "Straight Flush"];
 
-// Bots Configuration (Adicionado 'isFolded')
 const bots = [
     { id: 'bot1', name: 'Bot Mike', chips: 5000, elementStatus: 'bot1-status', betElement: 'bot1-bet', isFolded: false },
     { id: 'bot2', name: 'Bot Sarah', chips: 8500, elementStatus: 'bot2-status', betElement: 'bot2-bet', isFolded: false }
@@ -47,30 +46,29 @@ function login() {
 
     checkDailyBonus();
     saveUserData();
+    updateUI(); // Isso já atualiza o saldo do lobby também
     
-    // Ir para o Lobby em vez do Jogo direto
     loginOverlay.classList.remove('active');
     loginOverlay.classList.add('hidden');
     
-    // Mostrar Lobby
     lobbyOverlay.classList.remove('hidden');
     lobbyOverlay.classList.add('active');
 }
 
 // --- 2. LOBBY DE MESAS ---
 function selectTable(blindValue) {
-    if(currentUser.chips < blindValue * 5) {
-        return alert(`Você precisa de pelo menos R$ ${blindValue * 5} para entrar nesta mesa!`);
+    const minBuyIn = blindValue * 5;
+    
+    if(currentUser.chips < minBuyIn) {
+        return alert(`Você precisa de pelo menos R$ ${minBuyIn} para entrar nesta mesa!\nUse o botão DEPOSITAR acima.`);
     }
 
     currentBlind = blindValue;
     
-    // Esconde Lobby e mostra Jogo
     lobbyOverlay.classList.remove('active');
     lobbyOverlay.classList.add('hidden');
     gameContainer.classList.remove('hidden');
     
-    // Atualiza info da mesa
     tableInfoDisplay.innerText = `| BLIND: R$ ${blindValue}`;
     btnStart.innerText = `INICIAR RODADA (R$ ${blindValue})`;
     
@@ -82,6 +80,7 @@ function backToLobby() {
     gameContainer.classList.add('hidden');
     lobbyOverlay.classList.remove('hidden');
     lobbyOverlay.classList.add('active');
+    updateUI();
 }
 
 // --- 3. JOGO ---
@@ -90,15 +89,11 @@ function startGame() {
     if (currentUser.chips < currentBlind) return alert("Saldo insuficiente! Compre mais fichas.");
 
     clearTable();
-    
-    // Resetar Status dos Bots (CORREÇÃO DO BUG)
     bots.forEach(bot => bot.isFolded = false);
     
-    // Blinds
     currentUser.chips -= currentBlind;
-    currentPot = currentBlind * 3; // Jogador + 2 Bots
+    currentPot = currentBlind * 3;
     
-    // Mostrar Apostas Iniciais (CORREÇÃO VISUAL)
     showBetChips('my-bet', currentBlind);
     showBetChips('bot1-bet', currentBlind);
     showBetChips('bot2-bet', currentBlind);
@@ -124,14 +119,12 @@ function clearTable() {
     document.getElementById('my-cards').innerHTML = '';
     document.querySelectorAll('.card-slot').forEach(slot => slot.innerHTML = '');
     
-    // Limpa UI dos Bots
     bots.forEach(bot => {
         document.getElementById(bot.elementStatus).style.opacity = '0';
         document.getElementById(bot.betElement).classList.add('hidden');
         document.getElementById(bot.betElement).innerText = '';
     });
     
-    // Limpa UI do Jogador
     document.getElementById('my-status').style.opacity = '0';
     document.getElementById('my-bet').classList.add('hidden');
     document.getElementById('my-bet').innerText = '';
@@ -165,7 +158,6 @@ function playerAction(action) {
         betAmount = currentUser.chips;
     }
 
-    // Processar Aposta
     if (betAmount > 0) {
         if (currentUser.chips >= betAmount) {
             currentUser.chips -= betAmount;
@@ -180,7 +172,6 @@ function playerAction(action) {
         }
     }
 
-    // Turno dos Bots
     setTimeout(() => {
         handleBotsTurn(betAmount);
     }, 1000);
@@ -188,16 +179,13 @@ function playerAction(action) {
 
 function handleBotsTurn(playerBet) {
     bots.forEach(bot => {
-        // Se o bot já desistiu, não faz nada (CORREÇÃO DO BUG)
         if(bot.isFolded) return;
 
         const botEl = document.getElementById(bot.elementStatus);
         botEl.style.opacity = '1';
         
-        // IA Simples
         const decision = Math.random();
         
-        // Se o jogador deu All-in ou aposta alta, bot tem chance de Fold
         if (playerBet > currentBlind * 5 && decision < 0.4) {
             bot.isFolded = true;
             botEl.innerText = "DESISTIU";
@@ -207,7 +195,6 @@ function handleBotsTurn(playerBet) {
             botEl.innerText = "PAGOU";
             botEl.style.color = '#2ecc71';
             
-            // Bot coloca fichas
             const callAmount = (playerBet > 0) ? playerBet : currentBlind; 
             currentPot += callAmount;
             showBetChips(bot.betElement, callAmount);
@@ -216,7 +203,6 @@ function handleBotsTurn(playerBet) {
     
     updateUI();
     
-    // Verifica se todos desistiram
     const activeBots = bots.filter(b => !b.isFolded).length;
     if (activeBots === 0) {
         setTimeout(() => endHand(true, "Bots Desistiram"), 1000);
@@ -228,10 +214,6 @@ function handleBotsTurn(playerBet) {
 function nextStreet() {
     gameStage++;
     
-    // Limpar visualmente as apostas da rodada anterior (Opcional, mas limpo)
-    // document.getElementById('my-bet').classList.add('hidden');
-    // bots.forEach(b => document.getElementById(b.betElement).classList.add('hidden'));
-
     const slots = document.querySelectorAll('.card-slot');
     const c1 = generateRandomCard();
     const c2 = generateRandomCard();
@@ -254,14 +236,12 @@ function nextStreet() {
 }
 
 function determineWinner() {
-    // Escolhe aleatoriamente quem ganhou
     const winner = Math.random();
     let handName = handNames[Math.floor(Math.random() * handNames.length)];
     
     if (winner > 0.6) {
-        endHand(true, handName); // Jogador ganha
+        endHand(true, handName);
     } else {
-        // Escolhe qual bot ganhou
         const winnerBot = bots.find(b => !b.isFolded) || bots[0];
         endHand(false, handName, winnerBot.name);
     }
@@ -295,7 +275,6 @@ function showBetChips(elementId, amount) {
     if(amount > 0) {
         el.innerText = `🪙 ${amount}`;
         el.classList.remove('hidden');
-        // Forçar visibilidade caso CSS esteja falhando
         el.style.display = 'block'; 
         el.style.opacity = '1';
     } else {
@@ -318,13 +297,20 @@ function saveUserData() {
 }
 
 function updateUI() {
+    // Atualiza saldo em todos os lugares
+    const chipsFormatted = currentUser.chips.toLocaleString('pt-BR');
+    
     displayName.innerText = currentUser.username;
-    displayChips.innerText = currentUser.chips.toLocaleString('pt-BR');
+    displayChips.innerText = chipsFormatted;
+    
+    if(lobbyChips) lobbyChips.innerText = chipsFormatted;
+    
     potDisplay.innerText = "R$ " + currentPot;
     document.getElementById('table-player-name').innerText = currentUser.username;
 }
 
 function toggleShop() {
+    // Se clicar em depositar no lobby, garante que o overlay do shop apareça por cima
     if (shopOverlay.classList.contains('hidden')) {
         shopOverlay.classList.remove('hidden');
         shopOverlay.classList.add('active');
