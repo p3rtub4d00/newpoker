@@ -4,7 +4,7 @@
 
 body { background-color: #0a0a0a; font-family: 'Lato', sans-serif; color: white; height: 100vh; overflow: hidden; display: flex; flex-direction: column; }
 
-/* --- LOGIN & OVERLAYS --- */
+/* --- OVERLAYS (LOGIN, LOBBY, SHOP) --- */
 .overlay {
     position: fixed; top: 0; left: 0; width: 100%; height: 100%;
     background: rgba(0, 0, 0, 0.95); z-index: 1000;
@@ -13,6 +13,7 @@ body { background-color: #0a0a0a; font-family: 'Lato', sans-serif; color: white;
 }
 .overlay.active { opacity: 1; pointer-events: all; }
 
+/* Login */
 .login-box {
     background: linear-gradient(145deg, #1c1c1c, #0d0d0d);
     padding: 50px; border-radius: 20px; text-align: center;
@@ -21,60 +22,41 @@ body { background-color: #0a0a0a; font-family: 'Lato', sans-serif; color: white;
 }
 .logo-area h1 { font-family: 'Cinzel', serif; color: #d4af37; font-size: 2.5rem; }
 .logo-area p { color: #888; margin-bottom: 30px; letter-spacing: 2px; font-size: 0.8rem; }
+.input-group input { width: 100%; padding: 15px; background: #222; border: 1px solid #444; color: #fff; border-radius: 5px; font-size: 1.1rem; text-align: center; margin-bottom: 20px; outline: none; }
+#btn-login { background: linear-gradient(to right, #d4af37, #b4932a); color: #000; font-weight: bold; padding: 15px 40px; border: none; border-radius: 5px; font-size: 1.1rem; cursor: pointer; width: 100%; }
 
-.input-group input {
-    width: 100%; padding: 15px; background: #222; border: 1px solid #444;
-    color: #fff; border-radius: 5px; font-size: 1.1rem; text-align: center; margin-bottom: 20px; outline: none;
+/* Lobby (Mesas) */
+.lobby-box { width: 90%; max-width: 900px; text-align: center; }
+.lobby-box h2 { font-family: 'Cinzel', serif; color: #d4af37; font-size: 2rem; margin-bottom: 30px; }
+.tables-grid { display: flex; flex-wrap: wrap; justify-content: center; gap: 20px; }
+.table-card {
+    background: #1a1a1a; border: 1px solid #333; padding: 20px; border-radius: 10px;
+    width: 160px; cursor: pointer; transition: transform 0.2s, border-color 0.2s;
 }
-#btn-login {
-    background: linear-gradient(to right, #d4af37, #b4932a);
-    color: #000; font-weight: bold; padding: 15px 40px; border: none;
-    border-radius: 5px; font-size: 1.1rem; cursor: pointer; width: 100%;
-}
-.bonus-alert {
-    margin-top: 20px; background: rgba(46, 204, 113, 0.2);
-    color: #2ecc71; padding: 10px; border-radius: 5px; border: 1px solid #2ecc71;
-}
+.table-card:hover { transform: translateY(-5px); border-color: #d4af37; background: #222; }
+.table-icon { font-size: 3rem; margin-bottom: 10px; }
+.table-card h3 { color: #fff; margin-bottom: 5px; font-size: 1rem; }
+.table-card p { color: #888; font-size: 0.9rem; }
+.table-card.highlight { border-color: #d4af37; background: #2a2a2a; }
+.table-card.premium { border-color: #9b59b6; }
 
-/* --- LOJA --- */
-.shop-box {
-    background: #151515; width: 90%; max-width: 800px; border-radius: 15px;
-    border: 1px solid #333; padding: 30px; position: relative;
-}
+/* Loja */
+.shop-box { background: #151515; width: 90%; max-width: 800px; border-radius: 15px; border: 1px solid #333; padding: 30px; position: relative; }
 .shop-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
-.shop-header h2 { color: #d4af37; font-family: 'Cinzel', serif; }
-.close-btn { background: none; border: none; color: #fff; font-size: 1.5rem; cursor: pointer; }
 .shop-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; }
-.shop-card {
-    background: #222; padding: 20px; border-radius: 10px; text-align: center;
-    border: 1px solid #444; transition: transform 0.2s; position: relative;
-}
+.shop-card { background: #222; padding: 20px; border-radius: 10px; text-align: center; border: 1px solid #444; transition: transform 0.2s; }
 .shop-card:hover { transform: translateY(-5px); border-color: #d4af37; }
-.shop-card.popular { border: 2px solid #d4af37; background: #2a2a2a; }
-.tag-popular {
-    position: absolute; top: -12px; left: 50%; transform: translateX(-50%);
-    background: #d4af37; color: #000; font-size: 0.7rem; font-weight: bold;
-    padding: 2px 10px; border-radius: 10px;
-}
-.coin-icon { font-size: 2.5rem; margin-bottom: 10px; }
-.buy-btn {
-    background: #27ae60; color: white; border: none; padding: 10px; width: 100%;
-    border-radius: 5px; font-weight: bold; cursor: pointer;
-}
-.buy-btn:hover { background: #2ecc71; }
+.buy-btn { background: #27ae60; color: white; border: none; padding: 10px; width: 100%; border-radius: 5px; font-weight: bold; cursor: pointer; margin-top: 10px; }
+.close-btn { background: none; border: none; color: #fff; font-size: 1.5rem; cursor: pointer; }
 
 /* --- JOGO --- */
 .game-container { width: 100%; height: 100%; display: flex; flex-direction: column; }
-
-/* Barra Superior */
 .top-bar { background: #111; padding: 10px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #333; }
 .user-profile { display: flex; align-items: center; gap: 10px; }
 .avatar-small { width: 40px; height: 40px; background: #333; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 2px solid #d4af37; }
-.info { display: flex; flex-direction: column; font-size: 0.9rem; }
 .chips-container { color: #2ecc71; font-weight: bold; display: flex; align-items: center; gap: 5px; }
 .btn-add-chips { background: #27ae60; border: none; color: white; border-radius: 50%; width: 20px; height: 20px; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; }
-.logo-small { font-family: 'Cinzel', serif; color: #555; letter-spacing: 2px; }
-.btn-menu { background: transparent; border: 1px solid #444; color: #888; padding: 5px 15px; border-radius: 4px; cursor: pointer; }
+.btn-menu { background: transparent; border: 1px solid #444; color: #888; padding: 5px 15px; border-radius: 4px; cursor: pointer; font-size: 0.8rem; }
 
 /* Mesa */
 .table-area { flex: 1; display: flex; justify-content: center; align-items: center; position: relative; background: radial-gradient(circle at center, #1e1e1e 0%, #000000 100%); }
@@ -85,80 +67,66 @@ body { background-color: #0a0a0a; font-family: 'Lato', sans-serif; color: white;
 }
 .table-logo { position: absolute; top: 35%; left: 50%; transform: translate(-50%, -50%); font-family: 'Cinzel', serif; color: rgba(0,0,0,0.3); font-size: 2rem; pointer-events: none; }
 
+/* Assentos */
+.player-seat { position: absolute; display: flex; flex-direction: column; align-items: center; width: 120px; }
+.user-seat { bottom: -40px; left: 50%; transform: translateX(-50%); }
+
+/* FICHAS (Apostas) - CORRIGIDO PARA APARECER */
+.bet-indicator {
+    background: rgba(0,0,0,0.9);
+    color: #f1c40f;
+    padding: 5px 12px;
+    border-radius: 15px;
+    font-weight: bold;
+    border: 1px solid #f1c40f;
+    font-size: 0.9rem;
+    position: absolute; /* Posição absoluta relativa ao assento */
+    z-index: 50; /* Z-index alto para ficar acima da mesa */
+    white-space: nowrap;
+    box-shadow: 0 5px 10px rgba(0,0,0,0.5);
+}
+/* Posicionamento específico das fichas */
+.user-seat .bet-indicator { top: -40px; }
+.bot-seat .bet-indicator { bottom: -30px; }
+
+.avatar-bot { width: 60px; height: 60px; background: linear-gradient(145deg, #333, #111); border: 3px solid #666; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 1.5rem; box-shadow: 0 5px 15px rgba(0,0,0,0.5); z-index: 2; position: relative; }
+.player-info { background: #111; border: 1px solid #333; padding: 2px 10px; border-radius: 10px; margin-top: -10px; z-index: 3; text-align: center; min-width: 100px; position: relative; }
+.bot-status { font-size: 0.7rem; color: #fff; margin-top: 5px; background: rgba(0,0,0,0.5); padding: 2px 5px; border-radius: 4px; opacity: 0; transition: opacity 0.3s; min-height: 18px;}
+
 /* Cartas */
 .community-area { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); display: flex; gap: 10px; }
 .card-slot { width: 50px; height: 75px; border: 2px dashed rgba(255,255,255,0.2); border-radius: 5px; background: rgba(0,0,0,0.1); display: flex; justify-content: center; align-items: center; }
 .card { width: 50px; height: 75px; background: white; border-radius: 4px; color: black; font-weight: bold; display: flex; justify-content: center; align-items: center; font-size: 1.2rem; box-shadow: 2px 2px 5px rgba(0,0,0,0.4); }
 .card.red { color: #c0392b; } .card.black { color: #2c3e50; }
-.card.back { background: repeating-linear-gradient(45deg, #b71c1c, #b71c1c 10px, #c62828 10px, #c62828 20px); border: 2px solid white; }
-
-/* Pote e Assentos */
-.pot-area { position: absolute; top: 75%; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.6); padding: 5px 20px; border-radius: 20px; border: 1px solid #d4af37; font-size: 0.9rem; color: #d4af37; }
-.player-seat { position: absolute; display: flex; flex-direction: column; align-items: center; width: 120px; }
-.user-seat { bottom: -40px; left: 50%; transform: translateX(-50%); }
-
-.avatar-bot { width: 60px; height: 60px; background: linear-gradient(145deg, #333, #111); border: 3px solid #666; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 1.5rem; box-shadow: 0 5px 15px rgba(0,0,0,0.5); z-index: 2; position: relative; }
-.player-info { background: #111; border: 1px solid #333; padding: 2px 10px; border-radius: 10px; margin-top: -10px; z-index: 3; text-align: center; min-width: 100px; }
-.user-info-box { margin-top: 5px; border-color: #d4af37; }
-.p-name { display: block; font-size: 0.8rem; color: #aaa; }
-.p-chips { display: block; font-size: 0.9rem; color: #d4af37; font-weight: bold; }
 .my-cards { display: flex; gap: 5px; margin-bottom: 5px; min-height: 90px; }
 .my-cards .card { width: 60px; height: 90px; font-size: 1.5rem; transition: transform 0.3s; }
 .my-cards .card:hover { transform: translateY(-10px); }
 
-/* VISUAL DAS FICHAS (Apostas) */
-.bet-indicator {
-    background: rgba(0,0,0,0.8);
-    color: #f1c40f;
-    padding: 5px 10px;
-    border-radius: 15px;
-    font-weight: bold;
-    border: 1px solid #f1c40f;
-    margin-bottom: 5px;
-    animation: slideIn 0.3s ease;
-    z-index: 10;
-}
-@keyframes slideIn { from { transform: translateY(10px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+/* Pote */
+.pot-area { position: absolute; top: 75%; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.6); padding: 5px 20px; border-radius: 20px; border: 1px solid #d4af37; font-size: 0.9rem; color: #d4af37; }
 
-.bot-status { font-size: 0.7rem; color: #fff; margin-top: 5px; background: rgba(0,0,0,0.5); padding: 2px 5px; border-radius: 4px; opacity: 0; transition: opacity 0.3s; min-height: 18px;}
-
-/* Mensagem de Vitoria */
+/* Mensagem Vitória */
 .game-msg {
     position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-    background: rgba(0,0,0,0.9); color: #d4af37; font-family: 'Cinzel', serif;
-    font-size: 2rem; padding: 20px 40px; border: 3px solid #d4af37; border-radius: 10px; z-index: 20;
+    background: rgba(0,0,0,0.95); color: #d4af37; font-family: 'Cinzel', serif;
+    font-size: 1.8rem; padding: 30px 50px; border: 3px solid #d4af37; border-radius: 10px; z-index: 100;
     text-align: center; white-space: nowrap; box-shadow: 0 0 50px rgba(212, 175, 55, 0.5);
 }
 
-/* BARRA DE AÇÃO (Botões Novos) */
+/* Footer Actions */
 .action-bar { background: #111; padding: 10px; display: flex; justify-content: center; align-items: center; border-top: 1px solid #333; min-height: 100px; }
 .controls-group { display: flex; gap: 20px; align-items: center; flex-wrap: wrap; justify-content: center; }
-.controls-group.hidden { display: none; }
-
 .main-actions { display: flex; gap: 10px; }
 .bet-actions { display: flex; gap: 5px; border-left: 1px solid #444; padding-left: 15px; }
-
 .btn-action { padding: 15px 30px; border: none; border-radius: 5px; font-weight: bold; cursor: pointer; font-size: 1.1rem; color: white; min-width: 120px; }
-.btn-action:hover { filter: brightness(1.2); }
-.fold { background: #c0392b; }
-.check { background: #2980b9; }
-.deal { background: #d4af37; color: black; border: 2px solid #b4932a; font-size: 1.2rem; }
-
-.btn-small {
-    padding: 10px 15px; background: #222; border: 1px solid #444; color: #ccc;
-    border-radius: 4px; cursor: pointer; font-size: 0.9rem; font-weight: bold;
-    transition: all 0.2s;
-}
+.fold { background: #c0392b; } .check { background: #2980b9; } .deal { background: #d4af37; color: black; border: 2px solid #b4932a; font-size: 1.2rem; }
+.btn-small { padding: 10px 15px; background: #222; border: 1px solid #444; color: #ccc; border-radius: 4px; cursor: pointer; font-size: 0.9rem; font-weight: bold; transition: all 0.2s; }
 .btn-small:hover { background: #333; color: #fff; border-color: #d4af37; }
 .all-in { background: #e67e22; color: #fff; border-color: #d35400; }
-.all-in:hover { background: #d35400; }
 
-/* Responsivo */
 @media (max-width: 850px) {
     .poker-table { width: 95%; height: 350px; }
-    .card-slot { width: 35px; height: 50px; }
-    .card { width: 35px; height: 50px; font-size: 0.9rem; }
-    .my-cards .card { width: 45px; height: 70px; }
-    .controls-group { flex-direction: column; gap: 10px; }
     .bet-actions { border-left: none; padding-left: 0; border-top: 1px solid #444; padding-top: 10px; }
+    .tables-grid { gap: 10px; }
+    .table-card { width: 140px; padding: 10px; }
 }
